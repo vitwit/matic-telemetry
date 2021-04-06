@@ -1,5 +1,5 @@
 # heimdall-stats-exporter
-
+This will fetch data from rpc/lcd and export the metrics, to netstas dashboard by establishing a connection between both (client and server) by using web sockets. Data will be transfered through the socket and displayed over the netstas dashboard.
 
 ## Instructions to start bor with ethstats
 
@@ -27,6 +27,6 @@
 - After all these steps you can check the stats at http://ip:3000 (ex:http://localhost:3000)
 
 ```bash 
-Note :: Make sure to give netstats secret key for other nodes, then only your nodes can be connected with netstats and details will be displayed there
+Note :: Make sure to give netstats secret key for other nodes, then only your nodes can be connected with netstats and details will be displayed there.
 ```
 
