@@ -2,11 +2,9 @@ package stats
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/PrathyushaLakkireddy/heimdall-node-stats/config"
 )
@@ -53,43 +51,7 @@ type Caughtup struct {
 	Syncing bool `json:"syncing"`
 }
 
-type BlockDetails struct {
-	Result struct {
-		Block struct {
-			Header struct {
-				ChainID     string    `json:"chain_id"`
-				Height      string    `json:"height"`
-				Time        time.Time `json:"time"`
-				NumTxs      string    `json:"num_txs"`
-				TotalTxs    string    `json:"total_txs"`
-				LastBlockID struct {
-					Hash  string `json:"hash"`
-					Parts struct {
-						Total string `json:"total"`
-						Hash  string `json:"hash"`
-					} `json:"parts"`
-				} `json:"last_block_id"`
-				LastCommitHash string `json:"last_commit_hash"`
-				// DataHash           string `json:"data_hash"`
-				// ValidatorsHash     string `json:"validators_hash"`
-				// NextValidatorsHash string `json:"next_validators_hash"`
-				// ConsensusHash      string `json:"consensus_hash"`
-				// AppHash            string `json:"app_hash"`
-				// LastResultsHash    string `json:"last_results_hash"`
-				// EvidenceHash       string `json:"evidence_hash"`
-				// ProposerAddress    string `json:"proposer_address"`
-			} `json:"header"`
-			Data struct {
-				Txs interface{} `json:"txs"`
-			} `json:"data"`
-			Evidence struct {
-				Evidence interface{} `json:"evidence"`
-			} `json:"evidence"`
-			LastCommit interface{} `json:"last_commit"`
-		} `json:"block"`
-	} `json:"result"`
-}
-
+// GetLatestBlock will returns the latest block info and error if any
 func GetLatestBlock(cfg *config.Config) (Status, error) {
 	var block Status
 	url := cfg.Endpoints.HeimdallRPCEndpoint + "/status?"
@@ -102,7 +64,7 @@ func GetLatestBlock(cfg *config.Config) (Status, error) {
 	if res != nil {
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			fmt.Println("Error while reading resp body ", err)
+			log.Printf("Error while reading resp body : %v", err)
 			return block, err
 		}
 		err = json.Unmarshal(body, &block)
@@ -114,6 +76,7 @@ func GetLatestBlock(cfg *config.Config) (Status, error) {
 	return block, nil
 }
 
+// GetNetInfo will returns the network information and error if any
 func GetNetInfo(cfg *config.Config) (NetInfo, error) {
 	var info NetInfo
 	url := cfg.Endpoints.HeimdallRPCEndpoint + "/net_info?"
@@ -138,6 +101,7 @@ func GetNetInfo(cfg *config.Config) (NetInfo, error) {
 	return info, nil
 }
 
+// SyncStatus will returns the node syncing status and error if any
 func SyncStatus(cfg *config.Config) (Caughtup, error) {
 	var sync Caughtup
 	url := cfg.Endpoints.HeimdallLCDEndpoint + "/syncing"
@@ -160,28 +124,4 @@ func SyncStatus(cfg *config.Config) (Caughtup, error) {
 		}
 	}
 	return sync, nil
-}
-
-func GetBlockDetails(cfg *config.Config, height string) (BlockDetails, error) {
-	var block BlockDetails
-	url := cfg.Endpoints.HeimdallRPCEndpoint + "/block?height=" + height
-	res, err := http.Get(url)
-	if err != nil {
-		log.Printf("Error while getting sync info: %v", err)
-		return block, err
-	}
-
-	if res != nil {
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			log.Printf("Error while reading block details resp body : %v", err)
-			return block, err
-		}
-		err = json.Unmarshal(body, &block)
-		if err != nil {
-			log.Printf("Error while unmarshelling block res : %v", err)
-			return block, err
-		}
-	}
-	return block, nil
 }

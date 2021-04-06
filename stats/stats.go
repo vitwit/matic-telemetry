@@ -12,9 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereum/go-ethereum/consensus"
-	"github.com/ethereum/go-ethereum/event"
-	"github.com/ethereum/go-ethereum/p2p"
 	"github.com/gorilla/websocket"
 
 	"github.com/PrathyushaLakkireddy/heimdall-node-stats/config"
@@ -51,24 +48,6 @@ type nodeStats struct {
 	Peers    int  `json:"peers"`
 	GasPrice int  `json:"gasPrice"`
 	Uptime   int  `json:"uptime"`
-}
-
-// Service implements an Ethereum netstats reporting daemon that pushes local
-// chain statistics up to a monitoring server.
-type Service struct {
-	server *p2p.Server // Peer-to-peer server to retrieve networking infos
-	// backend backend
-	engine consensus.Engine // Consensus engine to retrieve variadic block fields
-
-	node string // Name of the node to display on the monitoring page
-	pass string // Password to authorize access to the monitoring page
-	host string // Remote address of the monitoring service
-
-	pongCh chan struct{} // Pong notifications are fed into this channel
-	histCh chan []uint64 // History request block numbers are fed into this channel
-
-	headSub event.Subscription
-	txSub   event.Subscription
 }
 
 // // blockStats is the information to report about individual blocks.
@@ -141,89 +120,6 @@ func Dailer(cfg *config.Config) error {
 	return nil
 }
 
-func report(conn *connWrapper, cfg *config.Config) error {
-	for {
-
-		err := ReportBlock(conn, cfg)
-		if err != nil {
-			return err
-		}
-
-		if err = reportStats(conn, cfg); err != nil {
-			return err
-		}
-		time.Sleep(4 * time.Second)
-	}
-
-	return nil
-}
-
-// reportBlock retrieves the current chain head and reports it to the stats server.
-func ReportBlock(conn *connWrapper, cfg *config.Config) error {
-	// Gather the block details from the header or block chain
-	// details := s.assembleBlockStats(block)
-
-	block, err := GetLatestBlock(cfg)
-	if err != nil {
-		log.Printf("Error while getting block details : %v", err)
-		return err
-	}
-	if block.Result.SyncInfo.LatestBlockHeight == "" {
-		log.Printf("Got an empty block result ")
-		return err
-	}
-
-	number := new(big.Int)
-	number, ok := number.SetString(block.Result.SyncInfo.LatestBlockHeight, 10)
-	if !ok {
-		log.Println("SetString: error")
-		// return
-	}
-	log.Println("Block height : %v", number)
-
-	thetime, err := time.Parse(time.RFC3339, block.Result.SyncInfo.LatestBlockTime)
-	if err != nil {
-		panic("Can't parse time format")
-	}
-	epoch := thetime.Unix()
-	s := strconv.FormatInt(epoch, 10)
-
-	blockTime := new(big.Int)
-	blockTime, ok = number.SetString(s, 10)
-	if !ok {
-		log.Println("SetString: error")
-		// return
-	}
-	log.Printf("Block Time : %v", blockTime)
-
-	details := blockStats{
-		Number:    number,
-		Hash:      block.Result.SyncInfo.LatestBlockHash,
-		Timestamp: blockTime,
-		TxHash:    "3456789121299127912762", // dummy data
-		Txs: []txStats{
-			{
-				Hash: "34567890AAQEQXASS", // dummy data
-			},
-		},
-		Uncles: []string{
-			"somee", // dummy data as frontend is not accepting empty response
-		},
-	}
-
-	// Assemble the block report and send it to the server
-	log.Printf("Sending new block to ethstats", "number", details.Number)
-
-	stats := map[string]interface{}{
-		"id":    cfg.StatsDetails.Node,
-		"block": details,
-	}
-	report := map[string][]interface{}{
-		"emit": {"block", stats},
-	}
-	return conn.WriteJSON(report)
-}
-
 // WriteJSON wraps corresponding method on the websocket but is safe for concurrent calling
 func (w *connWrapper) WriteJSON(v interface{}) error {
 	w.wlock.Lock()
@@ -285,8 +181,89 @@ func login(conn *connWrapper, cfg *config.Config) error {
 	return nil
 }
 
-// reportStats retrieves various stats about the node at the networking and
-// mining layer and reports it to the stats server.
+func report(conn *connWrapper, cfg *config.Config) error {
+	for {
+		err := ReportBlock(conn, cfg)
+		if err != nil {
+			log.Printf("Error while reporting block details : %v", err)
+			return err
+		}
+
+		if err = reportStats(conn, cfg); err != nil {
+			log.Printf("Error while reporting node stats : %v", err)
+			return err
+		}
+		time.Sleep(4 * time.Second)
+	}
+
+	return nil
+}
+
+// ReportBlock retrieves the current block details and reports it to the stats server.
+func ReportBlock(conn *connWrapper, cfg *config.Config) error {
+	block, err := GetLatestBlock(cfg)
+	if err != nil {
+		log.Printf("Error while getting block details : %v", err)
+		return err
+	}
+	if block.Result.SyncInfo.LatestBlockHeight == "" {
+		log.Printf("Got an empty block result ")
+		return err
+	}
+
+	number := new(big.Int)
+	number, ok := number.SetString(block.Result.SyncInfo.LatestBlockHeight, 10)
+	if !ok {
+		log.Println("SetString: error")
+		// return
+	}
+	log.Printf("Block height : %v", number)
+
+	thetime, err := time.Parse(time.RFC3339, block.Result.SyncInfo.LatestBlockTime)
+	if err != nil {
+		panic("Can't parse time format")
+	}
+	epoch := thetime.Unix()
+	s := strconv.FormatInt(epoch, 10)
+
+	blockTime := new(big.Int)
+	blockTime, ok = number.SetString(s, 10)
+	if !ok {
+		log.Println("SetString: error")
+		// return
+	}
+	log.Printf("Block Time : %v", blockTime)
+
+	details := blockStats{
+		Number:    number,
+		Hash:      block.Result.SyncInfo.LatestBlockHash,
+		Timestamp: blockTime,
+		TxHash:    "---", // dummy data
+		Txs: []txStats{
+			{
+				Hash: "---", // dummy data
+			},
+		},
+		Uncles: []string{
+			"---", // dummy data as frontend is not accepting empty response
+		},
+	}
+
+	// Assemble the block report and send it to the server
+	log.Printf("Sending new block to ethstats", "number", details.Number)
+
+	stats := map[string]interface{}{
+		"id":    cfg.StatsDetails.Node,
+		"block": details,
+	}
+	report := map[string][]interface{}{
+		"emit": {"block", stats},
+	}
+	return conn.WriteJSON(report)
+}
+
+// reportStats retrieves various stats about the node and
+// reports it to the stats server.
 func reportStats(conn *connWrapper, cfg *config.Config) error {
 	netInfo, err := GetNetInfo(cfg)
 	if err != nil {
@@ -309,7 +286,7 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 			// Hashrate: 1,
 			Peers:    peers,
 			GasPrice: 1000,
-			Syncing:  sync.Syncing, // TODO :: cross check
+			Syncing:  sync.Syncing,
 			// Uptime:   100,
 		},
 	}
