@@ -64,7 +64,9 @@ type blockStats struct {
 	Txs       []txStats `json:"transactions"`
 	TxHash    string    `json:"transactionsRoot"`
 	// Root   common.Hash `json:"stateRoot"`
-	Uncles []string `json:"uncles"`
+	Uncles          []string `json:"uncles"`
+	HeimdallVersion string   `json:"heimdallVersion"`
+	BorVersion      string   `json:"borVersion"`
 }
 
 // type uncleStats []string
@@ -89,7 +91,7 @@ func Dailer(cfg *config.Config) error {
 		err  error
 	)
 
-	dialer := websocket.Dialer{HandshakeTimeout: 5 * time.Second}
+	dialer := websocket.Dialer{HandshakeTimeout: 2 * time.Second}
 	header := make(http.Header)
 
 	header.Set("origin", "http://localhost")
@@ -234,6 +236,11 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 	}
 	log.Printf("Block Time : %v", blockTime)
 
+	heimdallVersion, err := GetHeimdallVersion(cfg)
+	if err != nil {
+		log.Printf("Error while getting heimdall version : %v", err)
+	}
+
 	details := blockStats{
 		Number:    number,
 		Hash:      block.Result.SyncInfo.LatestBlockHash,
@@ -247,6 +254,7 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 		Uncles: []string{
 			"---", // dummy data as frontend is not accepting empty response
 		},
+		HeimdallVersion: heimdallVersion,
 	}
 
 	// Assemble the block report and send it to the server
