@@ -51,6 +51,17 @@ type Caughtup struct {
 	Syncing bool `json:"syncing"`
 }
 
+// ApplicationInfo is a struct which holds the details app
+type HeimdallVersion struct {
+	NodeInfo           interface{} `json:"node_info"`
+	ApplicationVersion struct {
+		Name       string `json:"name"`
+		ServerName string `json:"server_name"`
+		ClientName string `json:"client_name"`
+		Version    string `json:"version"`
+	} `json:"application_version"`
+}
+
 // GetLatestBlock will returns the latest block info and error if any
 func GetLatestBlock(cfg *config.Config) (Status, error) {
 	var block Status
@@ -124,4 +135,33 @@ func SyncStatus(cfg *config.Config) (Caughtup, error) {
 		}
 	}
 	return sync, nil
+}
+
+// GetHeimdallVersion will returns the software version of heimdall
+func GetHeimdallVersion(cfg *config.Config) (string, error) {
+	var v string
+	var version HeimdallVersion
+	url := cfg.Endpoints.HeimdallLCDEndpoint + "/node_info"
+	res, err := http.Get(url)
+	if err != nil {
+		log.Printf("Error while getting heimdall version: %v", err)
+		return v, err
+	}
+
+	if res != nil {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			log.Printf("Error while getting heimdall version : %v", err)
+			return v, err
+		}
+		err = json.Unmarshal(body, &version)
+		if err != nil {
+			log.Printf("Error while getting heimdall version : %v", err)
+			return v, err
+		}
+	}
+	v = version.ApplicationVersion.Version
+	log.Printf("Heimdall Verison : %s", v)
+
+	return v, nil
 }
