@@ -12,6 +12,7 @@ So that in netstats dashboard you can observe two nodes data.
 
  - https://github.com/cubedro/eth-netstats follow instrctions from here and start eth-netstats
  - While starting the server, if you get `WS_SECRET NOT SET!!!` , then do `export WS_SECRET="key_name"` . (ex: export WS_SECRET=hello)
+ - You can check the running dashboard on ip_address:3000 (ex: http://localhost:3000).Not that data will be displayed after exporting bor and heimdall stats.
  - Note this same secret key will be used, while running bor and heimdall nodes to be connected with eth-nestats
 
 ## Run your bor node by giving flag of --ethstats
