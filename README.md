@@ -31,7 +31,7 @@ So that in netstats dashboard you can observe two nodes data.
  ``` bash
     git clone https://github.com/PrathyushaLakkireddy/heimdall-node-stats.git
     cd heimdall-node-stats
-    git fetch && git checkout master
+    git fetch && git checkout main
     cp example.config.toml config.toml
  ```
 
