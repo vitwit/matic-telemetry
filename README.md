@@ -1,30 +1,39 @@
 # heimdall-stats-exporter
-This will fetch data from rpc/lcd and exports the metrics, to netstas dashboard by establishing a connection between both (client and server) by using web sockets. Data will be transfered through the socket and displayed over the netstas dashboard. 
+This will fetch data from rpc and lcd endpoints and export the metrics to a netstats dashboard by establishing a connection between the client and server using web sockets. Data will be transferred through the socket and displayed over the netstats dashboard. 
 
-- Here is an overview of the netstas dashboard. In matic, will be having bor and heimdall. So for bor(geth based nodes) we can just enable the command --ethstats then metrics will be exported to netstats dashboard. But for heimdall we don't have such option, for that here we have written script, which reads data from rcd and lcd endpoints and exports the data to netstats dashboard.
-So that in netstats dashboard you can observe two nodes data.
-
-- You may get doubt, where to run these servers. Actually, `ethstats` dashboard can run on any of your server, it can be validator, sentry or any fresh instance. In the same way, you can run `heimdall-stats-exporter` as well. but for bor you have to enable the `--ethstats` command and retstart, wherever it was running. Note: Those three can run on same server as well.
-
-- Follow below instructions to run `ethstats` and export the data of `bor` and `heimdall`.
+It is recommended to run the ethstats dashboard and heimdall-stats-exporter on a sentry node which has both heimdall and bor already configured and operational. 
 
 ## Instructions to start ethstats dashboard
 
- - https://github.com/cubedro/eth-netstats follow instrctions from here and start eth-netstats
- - While starting the server, if you get `WS_SECRET NOT SET!!!` , then do `export WS_SECRET="key_name"` . (ex: export WS_SECRET=hello)
- - You can check the running dashboard on ip_address:3000 (ex: http://localhost:3000).Not that data will be displayed after exporting bor and heimdall stats.
- - Note this same secret key will be used, while running bor and heimdall nodes to be connected with eth-nestats
+ - Start eth-netstats using these instructions https://github.com/cubedro/eth-netstats 
+ - While starting that service, if you get `WS_SECRET NOT SET!!!` , then do `export WS_SECRET="key_name"` ex: `export WS_SECRET=hello`
+ - You can check the running dashboard on ip_address:3000. Note that data will be displayed only after exporting bor and heimdall stats.
+ 
 
-## Run your bor node by giving flag of --ethstats
+## Restart your bor node with the ethstats flag
 
- - If you are running any geth related node then you can give this flag while running the binary of it.
- - If you are running `bor` as a system service, 
-   - then you need to edit bor system service file, with editor of your choice. 
-   - Add `--ethstats` falg to your `ExecStart` and restart the bor service. (ex: ExecStart=/bin/bash /home/ubuntu/node/bor-start.sh --ethstats bor:hello@localhost:3000 )
-   - Then do system demon reload and start your service.
+  
+   - Add `--ethstats` flag to your bor bash script which will be present at `~/node/bor/start.sh`. After adding the flag the bash file it should look like this:
+   ```#!/usr/bin/env sh
 
- - If you are running just binary of bor as a non system service file then pass the `--ethstats` falg to it. ex: bor `--ethstats node:secretKey@host:port` (bor:hello@localhost:3000)
- - Note:  you have to give the host and port of netstats listening server.
+set -x #echo on
+
+BOR_DIR=${BOR_DIR:-~/.bor}
+DATA_DIR=$BOR_DIR/data
+
+bor --datadir $DATA_DIR \
+  --ethstats bor:hello@localhost:3000 \
+  --port 30303 \
+  --http --http.addr '0.0.0.0' \
+  --http.vhosts '*' \
+  --http.corsdomain '*' \
+  ......
+  ......
+```
+   - Restart your bor service `sudo systemctl restart bor`
+
+ 
+ 
 
 ## Running heimdall stats exporter
 
@@ -36,9 +45,8 @@ So that in netstats dashboard you can observe two nodes data.
     cp example.config.toml config.toml
  ```
 
- - Before running the sevrer make sure to configure the config.toml, by providing the mentioned fields.
 
- - Edit config.toml
+ - Edit config.toml (you can use the default values of the `config.toml` if you're deploying this exporter on a sentry node itself)
    
    - *heimdall_rpc_endpoint*
         
@@ -60,10 +68,10 @@ So that in netstats dashboard you can observe two nodes data.
 
       Provide the ip where the netstats dashboard was running (ex : localhost:3000). Based on this IP only, this script connect to the netstats server and export the metrics to the dashboard.
 
- - and then start the server, by running `go run main.go`
-- After all these steps you can check the stats at http://ip:3000 (ex:http://localhost:3000)
+ - Start the exporter service using `go run main.go`
+- You can check the telemetry stats at http://<server-ip>:3000 
 
 ```bash 
-Note :: Make sure to give same secret key for other nodes(bor and heimdall) which you have mentioned for `netstats`, then only your nodes can be connected with netstats and details will be displayed there.
+Note :: Make sure to use the same secret key for both bor and heimdall .
 ```
 
