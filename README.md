@@ -5,7 +5,7 @@ It is recommended to run the ethstats dashboard and heimdall-stats-exporter on a
 
 ## Instructions to start ethstats dashboard
 
- - Start eth-netstats using these instructions https://github.com/cubedro/eth-netstats 
+ - Start eth-netstats using these instructions https://github.com/PrathyushaLakkireddy/eth-netstats/tree/prathyusha/develop 
  - While starting that service, if you get `WS_SECRET NOT SET!!!` , then do `export WS_SECRET="key_name"` ex: `export WS_SECRET=hello`
  - You can check the running dashboard on ip_address:3000. Note that data will be displayed only after exporting bor and heimdall stats.
  
