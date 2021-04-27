@@ -154,11 +154,17 @@ func login(conn *connWrapper, cfg *config.Config) error {
 	node := cfg.StatsDetails.Node
 	str := strings.Split(cfg.StatsDetails.NetStatsIPAddress, ":")
 	port, _ := strconv.Atoi(str[1])
+
+	heimdallVersion, err := GetHeimdallVersion(cfg)
+	if err != nil {
+		log.Printf("Error while getting heimdall version : %v", err)
+	}
+
 	auth := &authMsg{
 		ID: node,
 		Info: nodeInfo{
 			Name:    node,
-			Node:    node,
+			Node:    heimdallVersion,
 			Port:    port,
 			Network: status.Result.Network,
 			// Protocol: strings.Join(protocols, ", "),
@@ -215,12 +221,14 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 	}
 
 	number := new(big.Int)
-	number, ok := number.SetString(block.Result.SyncInfo.LatestBlockHeight, 10)
+	nn, ok := number.SetString(block.Result.SyncInfo.LatestBlockHeight, 10)
 	if !ok {
 		log.Println("SetString: error")
 		// return
 	}
-	log.Printf("Block height : %v", number)
+	log.Printf("Block height : %v", nn)
+
+	bh := nn
 
 	thetime, err := time.Parse(time.RFC3339, block.Result.SyncInfo.LatestBlockTime)
 	if err != nil {
@@ -230,17 +238,18 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 	s := strconv.FormatInt(epoch, 10)
 
 	blockTime := new(big.Int)
-	blockTime, ok = number.SetString(s, 10)
+	bt, ok := blockTime.SetString(s, 10)
 	if !ok {
 		log.Println("SetString: error")
 		// return
 	}
-	log.Printf("Block Time : %v", blockTime)
+	log.Printf("Block Time : %v", bt)
+	log.Printf("block number..", bh)
 
 	details := blockStats{
-		Number:    number,
+		Number:    bh,
 		Hash:      block.Result.SyncInfo.LatestBlockHash,
-		Timestamp: blockTime,
+		Timestamp: bt,
 		TxHash:    "---", // dummy data
 		Txs: []txStats{
 			{
