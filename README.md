@@ -69,9 +69,8 @@ bor --datadir $DATA_DIR \
       Provide the ip where the netstats dashboard was running (ex : localhost:3000). Based on this IP only, this script connect to the netstats server and export the metrics to the dashboard.
 
  - Start the exporter service using `go run main.go`
-- You can check the telemetry stats at http://<server-ip>:3000 
+- You can check the telemetry stats at http://server-ip:3000 
 
 ```bash 
 Note :: Make sure to use the same secret key for both bor and heimdall .
 ```
-
