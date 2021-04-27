@@ -41,13 +41,14 @@ type nodeInfo struct {
 
 // nodeStats is the information to report about the local node.
 type nodeStats struct {
-	Active   bool `json:"active"`
-	Syncing  bool `json:"syncing"`
-	Mining   bool `json:"mining"`
-	Hashrate int  `json:"hashrate"`
-	Peers    int  `json:"peers"`
-	GasPrice int  `json:"gasPrice"`
-	Uptime   int  `json:"uptime"`
+	Active          bool   `json:"active"`
+	Syncing         bool   `json:"syncing"`
+	Mining          bool   `json:"mining"`
+	Hashrate        int    `json:"hashrate"`
+	Peers           int    `json:"peers"`
+	GasPrice        int    `json:"gasPrice"`
+	Uptime          int    `json:"uptime"`
+	HeimdallVersion string `json:"hversion"`
 }
 
 // // blockStats is the information to report about individual blocks.
@@ -236,11 +237,6 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 	}
 	log.Printf("Block Time : %v", blockTime)
 
-	heimdallVersion, err := GetHeimdallVersion(cfg)
-	if err != nil {
-		log.Printf("Error while getting heimdall version : %v", err)
-	}
-
 	details := blockStats{
 		Number:    number,
 		Hash:      block.Result.SyncInfo.LatestBlockHash,
@@ -254,7 +250,6 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 		Uncles: []string{
 			"---", // dummy data as frontend is not accepting empty response
 		},
-		HeimdallVersion: heimdallVersion,
 	}
 
 	// Assemble the block report and send it to the server
@@ -267,6 +262,7 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 	report := map[string][]interface{}{
 		"emit": {"block", stats},
 	}
+
 	return conn.WriteJSON(report)
 }
 
@@ -285,6 +281,11 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 		return err
 	}
 
+	heimdallVersion, err := GetHeimdallVersion(cfg)
+	if err != nil {
+		log.Printf("Error while getting heimdall version : %v", err)
+	}
+
 	peers, _ := strconv.Atoi(netInfo.Result.NPeers)
 	stats := map[string]interface{}{
 		"id": cfg.StatsDetails.Node,
@@ -292,9 +293,10 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 			Active: netInfo.Result.Listening,
 			Mining: true,
 			// Hashrate: 1,
-			Peers:    peers,
-			GasPrice: 1000,
-			Syncing:  sync.Syncing,
+			Peers:           peers,
+			GasPrice:        1000,
+			Syncing:         sync.Syncing,
+			HeimdallVersion: heimdallVersion,
 			// Uptime:   100,
 		},
 	}
