@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/PrathyushaLakkireddy/heimdall-node-stats/config"
-	"github.com/PrathyushaLakkireddy/heimdall-node-stats/stats"
+	"github.com/vitwit/matic-telemetry/config"
+	"github.com/vitwit/matic-telemetry/stats"
 )
 
 func main() {

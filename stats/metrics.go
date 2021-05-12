@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/PrathyushaLakkireddy/heimdall-node-stats/config"
+	"github.com/vitwit/matic-telemetry/config"
 )
 
 // Status is a struct which holds the parameter of status response

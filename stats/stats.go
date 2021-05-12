@@ -14,7 +14,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/PrathyushaLakkireddy/heimdall-node-stats/config"
+	"github.com/vitwit/matic-telemetry/config"
 )
 
 type connWrapper struct {
