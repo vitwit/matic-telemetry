@@ -1,4 +1,4 @@
-module github.com/PrathyushaLakkireddy/heimdall-node-stats
+module github.com/vitwit/matic-telemetry
 
 go 1.15
 
