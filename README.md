@@ -2,7 +2,7 @@
 
 - ## Bor:-
 Telemetry data for Bor nodes on Mainnet and Mumbai-testnet can be found here https://bor-mainnet.vitwit.com and https://bor-mumbai.vitwit.com.
-![](https://github.com/vitwit/matic-matic-telemetry/blob/main/docs/screen.png)
+![](https://github.com/vitwit/matic-telemetry/blob/main/docs/screen.png)
 
 To export your nodes telemetry data to these dashboards do the following steps - 
 #### Restart your bor node with the ethstats flag
