@@ -84,41 +84,50 @@ type authMsg struct {
 }
 
 func Dailer(cfg *config.Config) error {
-	// Resolve the URL, defaulting to TLS, but falling back to none too
-	path := fmt.Sprintf("ws://%s/api", cfg.StatsDetails.NetStatsIPAddress)
-	urls := []string{path}
-	var (
-		conn *connWrapper
-		err  error
-	)
+	errTimer := time.NewTimer(0)
+	defer errTimer.Stop()
+	for {
+		// Resolve the URL, defaulting to TLS, but falling back to none too
+		path := fmt.Sprintf("ws://%s/api", cfg.StatsDetails.NetStatsIPAddress)
+		urls := []string{path}
+		var (
+			conn *connWrapper
+			err  error
+		)
 
-	dialer := websocket.Dialer{HandshakeTimeout: 2 * time.Second}
-	header := make(http.Header)
+		dialer := websocket.Dialer{HandshakeTimeout: 2 * time.Second}
+		header := make(http.Header)
 
-	header.Set("origin", "http://localhost")
-	for _, url := range urls {
-		c, _, e := dialer.Dial(url, header)
-		err = e
-		if err == nil {
-			conn = newConnectionWrapper(c)
-			break
+		header.Set("origin", "http://localhost")
+		for _, url := range urls {
+			c, _, e := dialer.Dial(url, header)
+			err = e
+			if err == nil {
+				conn = newConnectionWrapper(c)
+				break
+			}
 		}
-	}
 
-	if err != nil {
-		log.Printf("Stats server unreachable", err)
-		return err
-	}
+		if err != nil {
+			log.Printf("Stats server unreachable : %v", err)
+			errTimer.Reset(10 * time.Second)
+			continue
+		}
 
-	if err = login(conn, cfg); err != nil {
-		log.Printf("Stats login failed : %v", err)
+		if err = login(conn, cfg); err != nil {
+			log.Printf("Stats login failed : %v", err)
+			conn.conn.Close()
+			errTimer.Reset(10 * time.Second)
+			continue
+		}
+
+		// Send the initial stats so our node looks decent from the get go
+		if err = report(conn, cfg); err != nil {
+			log.Printf("Initial stats report failed : %v", err)
+		}
+		// Close the current connection and establish a new one
 		conn.conn.Close()
-		return err
-	}
-
-	// Send the initial stats so our node looks decent from the get go
-	if err = report(conn, cfg); err != nil {
-		log.Printf("Initial stats report failed", "err", err)
+		errTimer.Reset(0)
 	}
 	return nil
 }
