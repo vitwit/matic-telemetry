@@ -50,7 +50,7 @@ type nodeStats struct {
 	Uptime            int     `json:"uptime"`
 	HeimdallVersion   string  `json:"hversion"`
 	HeimdallBlockTime float64 `json:"hBlockTime"`
-	TxCount           string  `json:"txCount"`
+	TxCount           int     `json:"hTxCount"`
 }
 
 // // blockStats is the information to report about individual blocks.
@@ -327,6 +327,7 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 			Syncing:           sync.Syncing,
 			HeimdallVersion:   heimdallVersion,
 			HeimdallBlockTime: avgBlockTime,
+			TxCount:           400000,
 			// Uptime:   100,
 		},
 	}
