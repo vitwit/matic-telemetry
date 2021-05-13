@@ -41,14 +41,16 @@ type nodeInfo struct {
 
 // nodeStats is the information to report about the local node.
 type nodeStats struct {
-	Active          bool   `json:"active"`
-	Syncing         bool   `json:"syncing"`
-	Mining          bool   `json:"mining"`
-	Hashrate        int    `json:"hashrate"`
-	Peers           int    `json:"peers"`
-	GasPrice        int    `json:"gasPrice"`
-	Uptime          int    `json:"uptime"`
-	HeimdallVersion string `json:"hversion"`
+	Active            bool    `json:"active"`
+	Syncing           bool    `json:"syncing"`
+	Mining            bool    `json:"mining"`
+	Hashrate          int     `json:"hashrate"`
+	Peers             int     `json:"peers"`
+	GasPrice          int     `json:"gasPrice"`
+	Uptime            int     `json:"uptime"`
+	HeimdallVersion   string  `json:"hversion"`
+	HeimdallBlockTime float64 `json:"hBlockTime"`
+	TxCount           string  `json:"txCount"`
 }
 
 // // blockStats is the information to report about individual blocks.
@@ -153,7 +155,7 @@ func (w *connWrapper) ReadJSON(v interface{}) error {
 	return w.conn.ReadJSON(v)
 }
 
-// login tries to authorize the client at the remote server.
+// login tries to authorize the client at the remote server
 func login(conn *connWrapper, cfg *config.Config) error {
 	status, err := GetLatestBlock(cfg)
 	if err != nil {
@@ -304,6 +306,15 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 		log.Printf("Error while getting heimdall version : %v", err)
 	}
 
+	hStats, err := GetHeimdallNodeStats(cfg)
+	if err != nil {
+		log.Printf("Error while getting heimdall node stats : %v", err)
+	}
+	avgBlockTime := hStats.Data.AverageBlockTime
+	// txCount := hStats.Data.TxCount
+
+	log.Printf("avg block time..", avgBlockTime)
+
 	peers, _ := strconv.Atoi(netInfo.Result.NPeers)
 	stats := map[string]interface{}{
 		"id": cfg.StatsDetails.Node,
@@ -311,10 +322,11 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 			Active: netInfo.Result.Listening,
 			Mining: true,
 			// Hashrate: 1,
-			Peers:           peers,
-			GasPrice:        1000,
-			Syncing:         sync.Syncing,
-			HeimdallVersion: heimdallVersion,
+			Peers:             peers,
+			GasPrice:          1000,
+			Syncing:           sync.Syncing,
+			HeimdallVersion:   heimdallVersion,
+			HeimdallBlockTime: avgBlockTime,
 			// Uptime:   100,
 		},
 	}

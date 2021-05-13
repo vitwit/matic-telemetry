@@ -62,6 +62,15 @@ type HeimdallVersion struct {
 	} `json:"application_version"`
 }
 
+type HeimdallStats struct {
+	// Success bool `json:"success"`
+	Data struct {
+		AverageBlockTime float64 `json:"averageBlockTime"`
+		TxCount          int     `json:"txCount"`
+		TotalSupply      int     `json:"totalSupply"`
+	} `json:"data"`
+}
+
 // GetLatestBlock will returns the latest block info and error if any
 func GetLatestBlock(cfg *config.Config) (Status, error) {
 	var block Status
@@ -164,4 +173,29 @@ func GetHeimdallVersion(cfg *config.Config) (string, error) {
 	log.Printf("Heimdall Verison : %s", v)
 
 	return v, nil
+}
+
+// GetHeimdallNodeStats which returns avg block time and tx count etc
+func GetHeimdallNodeStats(cfg *config.Config) (HeimdallStats, error) {
+	var h HeimdallStats
+	url := "http://159.65.184.68:3456" + "/stats"
+	res, err := http.Get(url)
+	if err != nil {
+		log.Printf("Error while getting heimdall stats: %v", err)
+		return h, err
+	}
+
+	if res != nil {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			log.Printf("Error while reading heimdall stats resp body : %v", err)
+			return h, err
+		}
+		err = json.Unmarshal(body, &h)
+		if err != nil {
+			log.Printf("Error while unmarshelling heimdall stats res : %v", err)
+			return h, err
+		}
+	}
+	return h, nil
 }
