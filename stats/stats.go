@@ -255,7 +255,7 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 		// return
 	}
 	log.Printf("Block Time : %v", bt)
-	log.Printf("block number..", bh)
+	log.Printf("block number : %v", bh)
 
 	details := blockStats{
 		Number:    bh,
@@ -273,7 +273,7 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 	}
 
 	// Assemble the block report and send it to the server
-	log.Printf("Sending new block to ethstats", "number", details.Number)
+	log.Printf("Sending new block to ethstats, number : %v", details.Number)
 
 	stats := map[string]interface{}{
 		"id":    cfg.StatsDetails.Node,
@@ -313,7 +313,7 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 	avgBlockTime := hStats.Data.AverageBlockTime
 	// txCount := hStats.Data.TxCount
 
-	log.Printf("avg block time..", avgBlockTime)
+	log.Printf("avg block time : %v", avgBlockTime)
 
 	peers, _ := strconv.Atoi(netInfo.Result.NPeers)
 	stats := map[string]interface{}{
@@ -334,6 +334,6 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 	report := map[string][]interface{}{
 		"emit": {"stats", stats},
 	}
-	log.Printf("reporting node stats..", report)
+	log.Printf("reporting node stats : %v", report)
 	return conn.WriteJSON(report)
 }
