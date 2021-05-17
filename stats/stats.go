@@ -51,26 +51,21 @@ type nodeStats struct {
 	HeimdallVersion string `json:"hversion"`
 }
 
-// // blockStats is the information to report about individual blocks.
+// blockStats is the information to report about individual blocks.
 type blockStats struct {
-	Number *big.Int `json:"number"`
-	Hash   string   `json:"hash"`
-	// ParentHash common.Hash    `json:"parentHash"`
-	Timestamp *big.Int `json:"timestamp"`
-	// Miner      common.Address `json:"miner"`
-	GasUsed   uint64    `json:"gasUsed"`
-	GasLimit  uint64    `json:"gasLimit"`
-	Diff      string    `json:"difficulty"`
-	TotalDiff string    `json:"totalDifficulty"`
-	Txs       []txStats `json:"transactions"`
-	TxHash    string    `json:"transactionsRoot"`
-	// Root   common.Hash `json:"stateRoot"`
-	Uncles          []string `json:"uncles"`
-	HeimdallVersion string   `json:"heimdallVersion"`
-	BorVersion      string   `json:"borVersion"`
+	Number          *big.Int  `json:"number"`
+	Hash            string    `json:"hash"`
+	Timestamp       *big.Int  `json:"timestamp"`
+	GasUsed         uint64    `json:"gasUsed"`
+	GasLimit        uint64    `json:"gasLimit"`
+	Diff            string    `json:"difficulty"`
+	TotalDiff       string    `json:"totalDifficulty"`
+	Txs             []txStats `json:"transactions"`
+	TxHash          string    `json:"transactionsRoot"`
+	Uncles          []string  `json:"uncles"`
+	HeimdallVersion string    `json:"heimdallVersion"`
+	BorVersion      string    `json:"borVersion"`
 }
-
-// type uncleStats []string
 
 type txStats struct {
 	Hash string `json:"hash"`
@@ -129,7 +124,6 @@ func Dailer(cfg *config.Config) error {
 		conn.conn.Close()
 		errTimer.Reset(0)
 	}
-	return nil
 }
 
 // WriteJSON wraps corresponding method on the websocket but is safe for concurrent calling
@@ -213,8 +207,6 @@ func report(conn *connWrapper, cfg *config.Config) error {
 		}
 		time.Sleep(4 * time.Second)
 	}
-
-	return nil
 }
 
 // ReportBlock retrieves the current block details and reports it to the stats server.
@@ -241,7 +233,8 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 
 	thetime, err := time.Parse(time.RFC3339, block.Result.SyncInfo.LatestBlockTime)
 	if err != nil {
-		panic("Can't parse time format")
+		log.Printf("Can't parse time format : %v", err)
+		return err
 	}
 	epoch := thetime.Unix()
 	s := strconv.FormatInt(epoch, 10)
@@ -250,7 +243,6 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 	bt, ok := blockTime.SetString(s, 10)
 	if !ok {
 		log.Println("SetString: error")
-		// return
 	}
 	log.Printf("Block Time : %v", bt)
 	log.Printf("block number : %v", bh)
@@ -308,14 +300,12 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 	stats := map[string]interface{}{
 		"id": cfg.StatsDetails.Node,
 		"stats": &nodeStats{
-			Active: netInfo.Result.Listening,
-			Mining: true,
-			// Hashrate: 1,
+			Active:          netInfo.Result.Listening,
+			Mining:          true,
 			Peers:           peers,
 			GasPrice:        1000,
 			Syncing:         sync.Syncing,
 			HeimdallVersion: heimdallVersion,
-			// Uptime:   100,
 		},
 	}
 	report := map[string][]interface{}{
