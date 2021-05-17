@@ -243,7 +243,7 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 
 	thetime, err := time.Parse(time.RFC3339, block.Result.SyncInfo.LatestBlockTime)
 	if err != nil {
-		panic("Can't parse time format")
+		log.Printf("Can't parse time format : %v", err)
 	}
 	epoch := thetime.Unix()
 	s := strconv.FormatInt(epoch, 10)
@@ -261,10 +261,10 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 		Number:    bh,
 		Hash:      block.Result.SyncInfo.LatestBlockHash,
 		Timestamp: bt,
-		TxHash:    "---", // dummy data
+		TxHash:    "---",
 		Txs: []txStats{
 			{
-				Hash: "---", // dummy data
+				Hash: "---",
 			},
 		},
 		Uncles: []string{
@@ -311,7 +311,7 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 		log.Printf("Error while getting heimdall node stats : %v", err)
 	}
 	avgBlockTime := hStats.Data.AverageBlockTime
-	// txCount := hStats.Data.TxCount
+	txCount := hStats.Data.TxCount
 
 	log.Printf("avg block time : %v", avgBlockTime)
 
@@ -327,8 +327,7 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 			Syncing:           sync.Syncing,
 			HeimdallVersion:   heimdallVersion,
 			HeimdallBlockTime: avgBlockTime,
-			TxCount:           400000,
-			// Uptime:   100,
+			TxCount:           txCount,
 		},
 	}
 	report := map[string][]interface{}{
