@@ -42,7 +42,7 @@ cp example.config.toml config.toml
 ```
 Replace default value of `node` with your <node-name> in `config.toml`.
 
-Use this to connect to mainnet dashboard
+Use the following secret_key and IP to connect to mainnet dashboard
 
 ```
 [stats_details]
@@ -51,7 +51,7 @@ node = "<node-name>"
 net_stats_ip = "heimdall-mainnet.vitwit.com:3000"
 ```
 
-Use this to connect to mainnet dashboard
+Use the following secret_key and IP to connect to testnet dashboard
 
 ```
 [stats_details]
@@ -59,6 +59,9 @@ secret_key = "heimdall_testnet"
 node = "<node-name>" 
 net_stats_ip = "heimdall-testnet.vitwit.com:3000"
 ```
-
+Run the exporter using
+```
+go run main.go
+```
 
 
