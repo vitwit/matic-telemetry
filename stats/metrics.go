@@ -11,8 +11,8 @@ import (
 
 // Status is a struct which holds the parameter of status response
 type Status struct {
-	Jsonrpc string `json:"jsonrpc"`
-	Result  struct {
+	// Jsonrpc string `json:"jsonrpc"`
+	Result struct {
 		NodeInfo interface{} `json:"node_info"`
 		Network  string      `json:"network"`
 		SyncInfo struct {
@@ -27,22 +27,11 @@ type Status struct {
 
 // NetInfo is a structre which holds the parameters of net info
 type NetInfo struct {
-	Jsonrpc string `json:"jsonrpc"`
-	Result  struct {
+	// Jsonrpc string `json:"jsonrpc"`
+	Result struct {
 		Listening bool     `json:"listening"`
 		Listeners []string `json:"listeners"`
 		NPeers    string   `json:"n_peers"`
-		Peers     []struct {
-			NodeInfo struct {
-				ProtocolVersion interface{} `json:"protocol_version"`
-				ID              string      `json:"id"`
-				ListenAddr      string      `json:"listen_addr"`
-				Network         string      `json:"network"`
-				Version         string      `json:"version"`
-				Moniker         string      `json:"moniker"`
-			} `json:"node_info"`
-			RemoteIP string `json:"remote_ip"`
-		} `json:"peers"`
 	} `json:"result"`
 }
 
