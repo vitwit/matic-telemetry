@@ -31,8 +31,34 @@ bor --datadir $DATA_DIR \
 To set up your own dashboard follow these [instructions](./docs/bor-setup.md).
 
 - ## Heimdall:-
+Telemetry data for Heimdall nodes on Mainnet and Mumbai-testnet can be found here [https://heimdall-mainnet.vitwit.com](https://heimdall-mainnet.vitwit.com) and [https://heimdall-mumbai.vitwit.com](https://heimdall-mumbai.vitwit.com)
 
+To export your nodes telemetry data to these dashboards do the following:-
 
+```
+git clone https://github.com/vitwit/matic-telemetry.git
+cd matic-telemetry
+cp example.config.toml config.toml
+```
+Replace default value of `node` with your <node-name> in `config.toml`.
+
+Use this to connect to mainnet dashboard
+
+```
+[stats_details]
+secret_key = "heimdall_mainnet"  
+node = "<node-name>" 
+net_stats_ip = "heimdall-mainnet.vitwit.com:3000"
+```
+
+Use this to connect to mainnet dashboard
+
+```
+[stats_details]
+secret_key = "heimdall_testnet"  
+node = "<node-name>" 
+net_stats_ip = "heimdall-testnet.vitwit.com:3000"
+```
 
 
 
