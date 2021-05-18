@@ -42,7 +42,7 @@ func ReadFromFile() (*Config, error) {
 		log.Fatal(err)
 	}
 
-	configPath := path.Join(usr.HomeDir, `.telemetry/config`)
+	configPath := path.Join(usr.HomeDir, `.telemetry/config/`)
 	log.Printf("Config Path : %s", configPath)
 
 	v := viper.New()
