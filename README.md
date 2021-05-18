@@ -57,7 +57,7 @@ Use the following secret_key and IP to connect to testnet dashboard
 [stats_details]
 secret_key = "heimdall_testnet"  
 node = "<node-name>" 
-net_stats_ip = "heimdall-testnet.vitwit.com:3000"
+net_stats_ip = "heimdall-mumbai.vitwit.com:3000"
 ```
 Run the exporter using
 ```
