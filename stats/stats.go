@@ -205,7 +205,7 @@ func report(conn *connWrapper, cfg *config.Config) error {
 			log.Printf("Error while reporting node stats : %v", err)
 			return err
 		}
-		time.Sleep(4 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }
 
