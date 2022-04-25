@@ -1,0 +1,8 @@
+# .goreleaser.yaml
+builds:
+  - main: ./telemetry
+    id: "telemetry"
+    binary: telemetry
+    goos:
+      - linux
+      - darwin
