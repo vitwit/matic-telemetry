@@ -11,7 +11,8 @@ To export your nodes telemetry data to these dashboards do the following steps -
   
 - Add `--ethstats` flag to your bor bash script which will be present at `~/node/bor/start.sh`. After adding the flag to the bash file it should look like this:
 
-```#!/usr/bin/env sh
+```shell
+#!/usr/bin/env sh
 
 set -x #echo on
 
@@ -71,6 +72,7 @@ net_stats_ip = "heimdall-mumbai.vitwit.com:3000"
 Build the binary :-
 
 ```shell
+go mod tidy
 go build -o telemetry
 mv telemetry $GOBIN
 ```
