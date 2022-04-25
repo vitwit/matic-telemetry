@@ -1,6 +1,6 @@
 # .goreleaser.yaml
 builds:
-  - main: ./telemetry
+  - main: ./main.go
     id: "telemetry"
     binary: telemetry
     goos:
