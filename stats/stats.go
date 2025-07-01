@@ -43,8 +43,6 @@ type nodeInfo struct {
 type nodeStats struct {
 	Active          bool   `json:"active"`
 	Syncing         bool   `json:"syncing"`
-	Mining          bool   `json:"mining"`
-	Hashrate        int    `json:"hashrate"`
 	Peers           int    `json:"peers"`
 	GasPrice        int    `json:"gasPrice"`
 	Uptime          int    `json:"uptime"`
@@ -149,7 +147,7 @@ func (w *connWrapper) ReadJSON(v interface{}) error {
 
 // login tries to authorize the client at the remote server.
 func login(conn *connWrapper, cfg *config.Config) error {
-	status, err := GetLatestBlock(cfg)
+	status, err := GetStatus(cfg)
 	if err != nil {
 		log.Printf("Error while getting network details : %v", err)
 		return err
@@ -169,7 +167,7 @@ func login(conn *connWrapper, cfg *config.Config) error {
 			Name:    node,
 			Node:    heimdallVersion,
 			Port:    port,
-			Network: status.Result.Network,
+			Network: status.Result.NodeInfo.Network,
 			// Protocol: strings.Join(protocols, ", "),
 			API:     "No",
 			Os:      runtime.GOOS,
@@ -183,6 +181,7 @@ func login(conn *connWrapper, cfg *config.Config) error {
 		"emit": {"hello", auth},
 	}
 	if err := conn.WriteJSON(login); err != nil {
+		fmt.Println("inside error:", err)
 		return err
 	}
 	// Retrieve the remote ack or connection termination
@@ -190,6 +189,8 @@ func login(conn *connWrapper, cfg *config.Config) error {
 	if err := conn.ReadJSON(&ack); err != nil || len(ack["emit"]) != 1 || ack["emit"][0] != "ready" {
 		return errors.New("unauthorized")
 	}
+
+	fmt.Println(ack)
 	return nil
 }
 
@@ -205,24 +206,26 @@ func report(conn *connWrapper, cfg *config.Config) error {
 			log.Printf("Error while reporting node stats : %v", err)
 			return err
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(8 * time.Second)
 	}
 }
 
 // ReportBlock retrieves the current block details and reports it to the stats server.
 func ReportBlock(conn *connWrapper, cfg *config.Config) error {
-	block, err := GetLatestBlock(cfg)
+
+	status, err := GetStatus(cfg)
 	if err != nil {
 		log.Printf("Error while getting block details : %v", err)
 		return err
 	}
-	if block.Result.SyncInfo.LatestBlockHeight == "" {
+
+	if status.Result.SyncInfo.LatestBlockHeight == "" {
 		log.Printf("Got an empty block result ")
 		return err
 	}
 
 	number := new(big.Int)
-	nn, ok := number.SetString(block.Result.SyncInfo.LatestBlockHeight, 10)
+	nn, ok := number.SetString(status.Result.SyncInfo.LatestBlockHeight, 10)
 	if !ok {
 		log.Println("SetString: error")
 		// return
@@ -231,7 +234,7 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 
 	bh := nn
 
-	thetime, err := time.Parse(time.RFC3339, block.Result.SyncInfo.LatestBlockTime)
+	thetime, err := time.Parse(time.RFC3339, status.Result.SyncInfo.LatestBlockTime)
 	if err != nil {
 		log.Printf("Can't parse time format : %v", err)
 		return err
@@ -249,7 +252,7 @@ func ReportBlock(conn *connWrapper, cfg *config.Config) error {
 
 	details := blockStats{
 		Number:    bh,
-		Hash:      block.Result.SyncInfo.LatestBlockHash,
+		Hash:      status.Result.SyncInfo.LatestBlockHash,
 		Timestamp: bt,
 		TxHash:    "---", // dummy data
 		Txs: []txStats{
@@ -301,9 +304,8 @@ func reportStats(conn *connWrapper, cfg *config.Config) error {
 		"id": cfg.StatsDetails.Node,
 		"stats": &nodeStats{
 			Active:          netInfo.Result.Listening,
-			Mining:          true,
 			Peers:           peers,
-			GasPrice:        1000,
+			GasPrice:        0,
 			Syncing:         sync.Syncing,
 			HeimdallVersion: heimdallVersion,
 		},
