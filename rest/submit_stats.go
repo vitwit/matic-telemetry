@@ -38,15 +38,22 @@ type Stats struct {
 	OS                  string   `json:"os"`
 	GoVersion           string   `json:"goVersion"`
 	Network             string   `json:"network"`
+	Transactions        int      `json:"transactions"`
+	Latency             int64    `json:"latency"`
+	Latitude            float64  `json:"latitude"`
+	Longitude           float64  `json:"longitude"`
+	Country             string   `json:"country"`
 }
 
-func SubmitStats(ctx *client.AppContext, cfg *config.Config) error {
+func SubmitStats(ctx *client.AppContext, cfg *config.Config, lat, lon float64, country string) error {
 
+	start := time.Now()
 	status, err := stats.GetStatus(cfg)
 	if err != nil {
 		return fmt.Errorf("failed to get status: %w", err)
 	}
 
+	latency := time.Since(start)
 	version, err := stats.GetHeimdallVersion(cfg)
 	if err != nil {
 		return fmt.Errorf("failed to get status: %w", err)
@@ -68,7 +75,12 @@ func SubmitStats(ctx *client.AppContext, cfg *config.Config) error {
 
 	blockTime, err := time.Parse(time.RFC3339Nano, status.Result.SyncInfo.LatestBlockTime)
 	if err != nil {
-		panic(err)
+		return err
+	}
+
+	transactionsLen, err := stats.GetTransactions(cfg, h)
+	if err != nil {
+		return err
 	}
 
 	vp, _ := strconv.Atoi(status.Result.ValidatorInfo.VotingPower)
@@ -91,6 +103,11 @@ func SubmitStats(ctx *client.AppContext, cfg *config.Config) error {
 			EarliestAppHash:     status.Result.SyncInfo.EarliestAppHash,
 			EarliestBlockHeight: uint64(eh),
 			Peers:               peers,
+			Transactions:        transactionsLen,
+			Latency:             latency.Milliseconds(),
+			Latitude:            lat,
+			Longitude:           lon,
+			Country:             country,
 		},
 	}
 

@@ -2,6 +2,7 @@ package stats
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -135,4 +136,30 @@ func GetHeimdallVersion(cfg *config.Config) (string, error) {
 	log.Printf("Heimdall Verison : %s", nodeInfo.ApplicationVersion.Version)
 
 	return nodeInfo.ApplicationVersion.Version, nil
+}
+
+// GetHeimdallVersion will returns the software version of heimdall
+func GetTransactions(cfg *config.Config, height int) (int, error) {
+	var block types.BlockResponse
+	url := cfg.Endpoints.HeimdallRPCEndpoint + fmt.Sprintf("/block?height=%d", height)
+	res, err := http.Get(url)
+	if err != nil {
+		log.Printf("Error while getting block info: %v", err)
+		return 0, err
+	}
+
+	if res != nil {
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			log.Printf("Error while getting block info : %v", err)
+			return 0, err
+		}
+		err = json.Unmarshal(body, &block)
+		if err != nil {
+			log.Printf("Error while getting block info : %v", err)
+			return 0, err
+		}
+	}
+
+	return len(block.Result.Block.Data.Txs), nil
 }
