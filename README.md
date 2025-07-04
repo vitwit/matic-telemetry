@@ -49,7 +49,7 @@ Use the following secret_key and IP to connect to **Mainnet** dashboard
 [stats_details]
 secret_key = "heimdall_mainnet"  
 node = "<node-name>" 
-net_stats_ip = "heimdall-mainnet.vitwit.com:3000"
+stats_service_url = "heimdall-mainnet.vitwit.com:3000"
 ```
 
 Use the following secret_key and IP to connect to **Testnet** dashboard
@@ -58,7 +58,7 @@ Use the following secret_key and IP to connect to **Testnet** dashboard
 [stats_details]
 secret_key = "heimdall_testnet"  
 node = "<node-name>" 
-net_stats_ip = "heimdall-mumbai.vitwit.com:3000"
+stats_service_url = "heimdall-mumbai.vitwit.com:3000"
 ```
 Build the binary :-
 ```

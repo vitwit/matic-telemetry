@@ -12,20 +12,14 @@ import (
 type (
 	// Endpoints defines multiple API base-urls to fetch the data
 	Endpoints struct {
-		// EthRPCEndpoint      string `mapstructure:"eth_rpc_endpoint"`
-		// BorRPCEndpoint      string `mapstructure:"bor_rpc_end_point"`
-		// BorExternalRPC      string `mapstructure:"bor_external_rpc"`
 		HeimdallRPCEndpoint string `mapstructure:"heimdall_rpc_endpoint"`
 		HeimdallLCDEndpoint string `mapstructure:"heimdall_lcd_endpoint"`
-		// HeimdallExternalRPC string `mapstructure:"heimdall_external_rpc"`
 	}
 
 	StatsDetails struct {
-		SecretKey         string `mapstructure:"secret_key"`
-		Node              string `mapstructure:"node"`
-		NetStatsIPAddress string `mapstructure:"net_stats_ip"`
-		Port              int    `mapstructure:"port"`
-		Host              string `mapstructure:"host"`
+		SecretKey       string `mapstructure:"secret_key"`
+		Node            string `mapstructure:"node"`
+		StatsServiceURL string `mapstructure:"stats_service_url"`
 	}
 
 	// Config defines all the configurations required for the app
