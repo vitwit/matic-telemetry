@@ -5,6 +5,10 @@ type NodeInfoResponse struct {
 	ApplicationVersion ApplicationVersion `json:"application_version"`
 }
 
+type VersionResponse struct {
+	Version string `json:"version"`
+}
+
 type DefaultNodeInfo struct {
 	ProtocolVersion struct {
 		P2P   string `json:"p2p"`

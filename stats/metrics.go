@@ -138,6 +138,31 @@ func GetHeimdallVersion(cfg *config.Config) (string, error) {
 	return nodeInfo.ApplicationVersion.Version, nil
 }
 
+// GetVersion will returns the software version of heimdall
+func GetVersion(cfg *config.Config) (string, error) {
+	var versionInfo types.VersionResponse
+	url := cfg.Endpoints.HeimdallLCDEndpoint + "/version"
+	res, err := http.Get(url)
+	if err != nil {
+		log.Printf("Error while getting heimdall version: %v", err)
+		return "", err
+	}
+
+	if res != nil {
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			log.Printf("Error while getting heimdall version : %v", err)
+			return "", err
+		}
+		err = json.Unmarshal(body, &versionInfo)
+		if err != nil {
+			log.Printf("Error while getting heimdall version : %v", err)
+			return "", err
+		}
+	}
+	return versionInfo.Version, nil
+}
+
 // GetHeimdallVersion will returns the software version of heimdall
 func GetTransactions(cfg *config.Config, height int) (int, error) {
 	var block types.BlockResponse
