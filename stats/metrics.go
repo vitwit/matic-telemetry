@@ -2,155 +2,189 @@ package stats
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 
 	"github.com/vitwit/matic-telemetry/config"
+	"github.com/vitwit/matic-telemetry/types"
 )
 
-// Status is a struct which holds the parameter of status response
-type Status struct {
-	// Jsonrpc string `json:"jsonrpc"`
-	Result struct {
-		NodeInfo interface{} `json:"node_info"`
-		Network  string      `json:"network"`
-		SyncInfo struct {
-			LatestBlockHash   string `json:"latest_block_hash"`
-			LatestBlockHeight string `json:"latest_block_height"`
-			LatestBlockTime   string `json:"latest_block_time"`
-			CatchingUp        bool   `json:"catching_up"`
-		} `json:"sync_info"`
-		ValidatorInfo interface{} `json:"validator_info"`
-	} `json:"result"`
-}
-
-// NetInfo is a structre which holds the parameters of net info
-type NetInfo struct {
-	// Jsonrpc string `json:"jsonrpc"`
-	Result struct {
-		Listening bool     `json:"listening"`
-		Listeners []string `json:"listeners"`
-		NPeers    string   `json:"n_peers"`
-	} `json:"result"`
-}
-
-// Caughtup is a struct which holds the fields of syncing
-type Caughtup struct {
-	Syncing bool `json:"syncing"`
-}
-
-// ApplicationInfo is a struct which holds the details app
-type HeimdallVersion struct {
-	NodeInfo           interface{} `json:"node_info"`
-	ApplicationVersion struct {
-		Name       string `json:"name"`
-		ServerName string `json:"server_name"`
-		ClientName string `json:"client_name"`
-		Version    string `json:"version"`
-	} `json:"application_version"`
-}
-
-// GetLatestBlock will returns the latest block info and error if any
-func GetLatestBlock(cfg *config.Config) (Status, error) {
-	var block Status
-	url := cfg.Endpoints.HeimdallRPCEndpoint + "/status?"
+// GetStatus will returns the the node status
+func GetStatus(cfg *config.Config) (*types.NodeStatusResponse, error) {
+	var status types.NodeStatusResponse
+	url := cfg.Endpoints.HeimdallRPCEndpoint + "/status"
 	res, err := http.Get(url)
 	if err != nil {
 		log.Printf("Error: %v", err)
-		return block, err
+		return nil, err
 	}
 
 	if res != nil {
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			log.Printf("Error while reading resp body : %v", err)
-			return block, err
+			return nil, err
 		}
-		err = json.Unmarshal(body, &block)
+		err = json.Unmarshal(body, &status)
 		if err != nil {
-			return block, err
+			return nil, err
 		}
 	}
 
-	return block, nil
+	return &status, nil
+}
+
+// GetStatus will returns the latest block info
+func GetLatestBlock(cfg *config.Config) (*types.BlockResponse, error) {
+	var result types.BlockResponse
+	url := cfg.Endpoints.HeimdallRPCEndpoint + "/block"
+	res, err := http.Get(url)
+	if err != nil {
+		log.Printf("Error: %v", err)
+		return nil, err
+	}
+
+	if res != nil {
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			log.Printf("Error while reading resp body : %v", err)
+			return nil, err
+		}
+		err = json.Unmarshal(body, &result)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &result, nil
 }
 
 // GetNetInfo will returns the network information and error if any
-func GetNetInfo(cfg *config.Config) (NetInfo, error) {
-	var info NetInfo
-	url := cfg.Endpoints.HeimdallRPCEndpoint + "/net_info?"
+func GetNetInfo(cfg *config.Config) (*types.NetInfoResponse, error) {
+	var info types.NetInfoResponse
+	url := cfg.Endpoints.HeimdallRPCEndpoint + "/net_info"
 	res, err := http.Get(url)
 	if err != nil {
 		log.Printf("Error: %v", err)
-		return info, err
+		return nil, err
 	}
 
 	if res != nil {
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			log.Printf("Error while reading resp body : %v", err)
-			return info, err
+			return nil, err
 		}
 		err = json.Unmarshal(body, &info)
 		if err != nil {
 			log.Printf("Error while unmarshelling net info")
-			return info, err
+			return nil, err
 		}
 	}
-	return info, nil
+	return &info, nil
 }
 
 // SyncStatus will returns the node syncing status and error if any
-func SyncStatus(cfg *config.Config) (Caughtup, error) {
-	var sync Caughtup
-	url := cfg.Endpoints.HeimdallLCDEndpoint + "/syncing"
+func SyncStatus(cfg *config.Config) (*types.SyncingResponse, error) {
+	var sync types.SyncingResponse
+	url := cfg.Endpoints.HeimdallLCDEndpoint + "/cosmos/base/tendermint/v1beta1/syncing"
 	res, err := http.Get(url)
 	if err != nil {
 		log.Printf("Error while getting sync info: %v", err)
-		return sync, err
+		return nil, err
 	}
 
 	if res != nil {
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			log.Printf("Error while reading resp body : %v", err)
-			return sync, err
+			return nil, err
 		}
 		err = json.Unmarshal(body, &sync)
 		if err != nil {
 			log.Printf("Error while unmarshelling sync res : %v", err)
-			return sync, err
+			return nil, err
 		}
 	}
-	return sync, nil
+	return &sync, nil
 }
 
 // GetHeimdallVersion will returns the software version of heimdall
 func GetHeimdallVersion(cfg *config.Config) (string, error) {
-	var v string
-	var version HeimdallVersion
-	url := cfg.Endpoints.HeimdallLCDEndpoint + "/node_info"
+	var nodeInfo types.NodeInfoResponse
+	url := cfg.Endpoints.HeimdallLCDEndpoint + "/cosmos/base/tendermint/v1beta1/node_info"
 	res, err := http.Get(url)
 	if err != nil {
 		log.Printf("Error while getting heimdall version: %v", err)
-		return v, err
+		return "", err
 	}
 
 	if res != nil {
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			log.Printf("Error while getting heimdall version : %v", err)
-			return v, err
+			return "", err
 		}
-		err = json.Unmarshal(body, &version)
+		err = json.Unmarshal(body, &nodeInfo)
 		if err != nil {
 			log.Printf("Error while getting heimdall version : %v", err)
-			return v, err
+			return "", err
 		}
 	}
-	v = version.ApplicationVersion.Version
-	log.Printf("Heimdall Verison : %s", v)
+	log.Printf("Heimdall Verison : %s", nodeInfo.ApplicationVersion.Version)
 
-	return v, nil
+	return nodeInfo.ApplicationVersion.Version, nil
+}
+
+// GetVersion will returns the software version of heimdall
+func GetVersion(cfg *config.Config) (string, error) {
+	var versionInfo types.VersionResponse
+	url := cfg.Endpoints.HeimdallLCDEndpoint + "/version"
+	res, err := http.Get(url)
+	if err != nil {
+		log.Printf("Error while getting heimdall version: %v", err)
+		return "", err
+	}
+
+	if res != nil {
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			log.Printf("Error while getting heimdall version : %v", err)
+			return "", err
+		}
+		err = json.Unmarshal(body, &versionInfo)
+		if err != nil {
+			log.Printf("Error while getting heimdall version : %v", err)
+			return "", err
+		}
+	}
+	return versionInfo.Version, nil
+}
+
+// GetHeimdallVersion will returns the software version of heimdall
+func GetTransactions(cfg *config.Config, height int) (int, error) {
+	var block types.BlockResponse
+	url := cfg.Endpoints.HeimdallRPCEndpoint + fmt.Sprintf("/block?height=%d", height)
+	res, err := http.Get(url)
+	if err != nil {
+		log.Printf("Error while getting block info: %v", err)
+		return 0, err
+	}
+
+	if res != nil {
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			log.Printf("Error while getting block info : %v", err)
+			return 0, err
+		}
+		err = json.Unmarshal(body, &block)
+		if err != nil {
+			log.Printf("Error while getting block info : %v", err)
+			return 0, err
+		}
+	}
+
+	return len(block.Result.Block.Data.Txs), nil
 }
