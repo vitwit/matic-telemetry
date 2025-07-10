@@ -56,7 +56,10 @@ func SubmitStats(ctx *client.AppContext, cfg *config.Config, lat, lon float64, c
 	latency := time.Since(start)
 	version, err := stats.GetVersion(cfg)
 	if err != nil {
-		return fmt.Errorf("failed to get status: %w", err)
+		version, err = stats.GetHeimdallVersion(cfg)
+		if err != nil {
+			return fmt.Errorf("failed to get status: %w", err)
+		}
 	}
 
 	netInfo, err := stats.GetNetInfo(cfg)

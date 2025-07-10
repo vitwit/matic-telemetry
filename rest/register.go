@@ -39,7 +39,10 @@ func RegisterNode(ctx *client.AppContext, cfg *config.Config) error {
 
 	version, err := stats.GetVersion(cfg)
 	if err != nil {
-		return fmt.Errorf("failed to get status: %w", err)
+		version, err = stats.GetHeimdallVersion(cfg)
+		if err != nil {
+			return fmt.Errorf("failed to get status: %w", err)
+		}
 	}
 
 	vp, _ := strconv.Atoi(status.Result.ValidatorInfo.VotingPower)
