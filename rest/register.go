@@ -86,6 +86,10 @@ func RegisterNode(ctx *client.AppContext, cfg *config.Config) error {
 		if err := json.Unmarshal(body, &errResp); err != nil {
 			return fmt.Errorf("404 received but failed to parse body: %s", string(body))
 		}
+
+		if errResp.Message == "Node already registered" {
+			return nil
+		}
 		return errors.New(errResp.Message)
 	}
 
