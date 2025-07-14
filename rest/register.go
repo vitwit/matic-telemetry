@@ -3,7 +3,9 @@ package rest
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -70,7 +72,26 @@ func RegisterNode(ctx *client.AppContext, cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
+
+	body, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
+	if err != nil {
+		return fmt.Errorf("failed to read response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		var errResp struct {
+			Message string `json:"message"`
+		}
+		if err := json.Unmarshal(body, &errResp); err != nil {
+			return fmt.Errorf("404 received but failed to parse body: %s", string(body))
+		}
+
+		if errResp.Message == "Node already registered" {
+			return nil
+		}
+		return errors.New(errResp.Message)
+	}
 
 	return nil
 }
