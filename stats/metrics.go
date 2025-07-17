@@ -51,6 +51,26 @@ type HeimdallVersion struct {
 	} `json:"application_version"`
 }
 
+// HeimdallVersionNew is a struct for the new /version endpoint response
+// Example response:
+//
+//	{
+//	  "name": "heimdall",
+//	  "server_name": "heimdalld",
+//	  "client_name": "heimdalld",
+//	  "version": "0.2.5",
+//	  "commit": "a26074f95008028089b5a8e48232e4434e746ca5",
+//	  "go": "go version go1.24.4 linux/amd64"
+//	}
+type HeimdallVersionNew struct {
+	Name       string `json:"name"`
+	ServerName string `json:"server_name"`
+	ClientName string `json:"client_name"`
+	Version    string `json:"version"`
+	Commit     string `json:"commit"`
+	Go         string `json:"go"`
+}
+
 // GetLatestBlock will returns the latest block info and error if any
 func GetLatestBlock(cfg *config.Config) (Status, error) {
 	var block Status
@@ -129,8 +149,8 @@ func SyncStatus(cfg *config.Config) (Caughtup, error) {
 // GetHeimdallVersion will returns the software version of heimdall
 func GetHeimdallVersion(cfg *config.Config) (string, error) {
 	var v string
-	var version HeimdallVersion
-	url := cfg.Endpoints.HeimdallLCDEndpoint + "/node_info"
+	var version HeimdallVersionNew
+	url := cfg.Endpoints.HeimdallLCDEndpoint + "/version"
 	res, err := http.Get(url)
 	if err != nil {
 		log.Printf("Error while getting heimdall version: %v", err)
@@ -149,8 +169,8 @@ func GetHeimdallVersion(cfg *config.Config) (string, error) {
 			return v, err
 		}
 	}
-	v = version.ApplicationVersion.Version
-	log.Printf("Heimdall Verison : %s", v)
+	v = version.Version
+	log.Printf("Heimdall Version : %s", v)
 
 	return v, nil
 }

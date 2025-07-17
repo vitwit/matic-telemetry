@@ -90,3 +90,33 @@ View the logs using
 
 `journalctl -u telemetry -f`
 
+
+# Upgrading for Heimdall v2 Version API Change
+
+If you are running Heimdall v2 (where the version API endpoint has changed), follow these steps to upgrade your telemetry exporter:
+
+1. **Fetch the latest code:**
+   ```sh
+   git fetch origin
+   git checkout heimdall-v2
+   git pull origin heimdall-v2
+   ```
+2. **Update Go dependencies:**
+   ```sh
+   go mod tidy
+   ```
+3. **Build the new telemetry binary:**
+   ```sh
+   go build -o telemetry
+   ```
+4. **Replace the old binary in your $GOBIN:**
+   ```sh
+   mv telemetry $GOBIN
+   ```
+5. **Restart the telemetry systemd service:**
+   ```sh
+   sudo systemctl restart telemetry.service
+   ```
+
+After these steps, your telemetry exporter will be compatible with the new Heimdall v2 version API.
+
