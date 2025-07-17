@@ -10,13 +10,24 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/spf13/pflag"
 	"github.com/vitwit/matic-telemetry/client"
 	"github.com/vitwit/matic-telemetry/config"
 	"github.com/vitwit/matic-telemetry/rest"
 )
 
 func main() {
-	cfg, err := config.ReadFromFile()
+	var configPath string
+	pflag.StringVar(&configPath, "config", "", "Path to config directory (default: $HOME/.telemetry/config)")
+	pflag.Parse()
+
+	var cfg *config.Config
+	var err error
+	if configPath != "" {
+		cfg, err = config.ReadFromPath(configPath)
+	} else {
+		cfg, err = config.ReadFromFile()
+	}
 	if err != nil {
 		panic(err)
 	}
