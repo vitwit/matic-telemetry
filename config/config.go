@@ -37,6 +37,11 @@ func ReadFromFile() (*Config, error) {
 	}
 
 	configPath := path.Join(usr.HomeDir, `.telemetry/config/`)
+	return ReadFromPath(configPath)
+}
+
+// ReadFromPath reads config from a given directory path
+func ReadFromPath(configPath string) (*Config, error) {
 	log.Printf("Config Path : %s", configPath)
 
 	v := viper.New()

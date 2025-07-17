@@ -43,6 +43,14 @@ cp example.config.toml ~/.telemetry/config/config.toml
 ```
 Replace default value of `node` with your <node-name> in `~/.telemetry/config/config.toml`.
 
+> **Note:**
+> The config file must be present in the `~/.telemetry/config` directory by default. You can specify a different config directory using the `--config` flag when running the telemetry binary. For example:
+> 
+> ```sh
+> ./telemetry --config /path/to/your/configdir
+> ```
+> If the flag is not provided, the default path is `~/.telemetry/config`.
+
 Use the following secret_key and IP to connect to **Mainnet** dashboard
 
 ```
@@ -72,7 +80,7 @@ Description=Telemtry
 After=network-online.target
 [Service]
 User=$USER
-ExecStart=$(which telemetry)
+ExecStart=$(which telemetry) --config /home/<user>/.telemetry/config
 Restart=always
 RestartSec=3
 LimitNOFILE=4096
