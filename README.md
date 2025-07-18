@@ -80,7 +80,7 @@ Description=Telemtry
 After=network-online.target
 [Service]
 User=$USER
-ExecStart=$(which telemetry) --config /home/<user>/.telemetry/config
+ExecStart=$(which telemetry) --config $HOME/.telemetry/config
 Restart=always
 RestartSec=3
 LimitNOFILE=4096
