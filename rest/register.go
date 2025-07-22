@@ -51,7 +51,7 @@ func RegisterNode(ctx *client.AppContext, cfg *config.Config) error {
 	payload := RegisterRequest{
 		Secret: cfg.StatsDetails.SecretKey,
 		NodeInfo: NodeInfo{
-			ID:          status.Result.NodeInfo.ID,
+			ID:          cfg.StatsDetails.Node,
 			Version:     version,
 			Network:     status.Result.NodeInfo.Network,
 			OS:          fmt.Sprintf("%s-%s", runtime.GOOS, runtime.GOARCH),
