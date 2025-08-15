@@ -20,8 +20,8 @@ RUN go mod download
 COPY .git ./.git
 COPY . ./
 
-# Build the application
-RUN go build -o telemetry
+# Build the application with static linking for Alpine
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o telemetry .
 
 # Create a new, smaller image based on alpine
 FROM alpine:latest
