@@ -120,3 +120,14 @@ If you are running Heimdall v2 (where the version API endpoint has changed), fol
 
 After these steps, your telemetry exporter will be compatible with the new Heimdall v2 version API.
 
+## Build Docker Image
+
+```
+docker buildx build --platform linux/amd64 -t matic-telemetry .
+```
+
+## Run Docker Image
+Run matic-telemetry with the config file in the current directory:
+```
+docker run --name matic-telemetry -v config.toml:/home/telemetry/.telemetry/config/config.toml matic-telemetry
+```
