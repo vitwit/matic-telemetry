@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"fmt"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -31,7 +32,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
+	fmt.Println(cfg)
+	
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	logger := log.Output(os.Stderr).With().Str("component", "telemetry").Logger()
 
