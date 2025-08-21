@@ -90,7 +90,7 @@ func SubmitStats(ctx *client.AppContext, cfg *config.Config, lat, lon float64, c
 	payload := NodeStatsRequest{
 		Secret: cfg.StatsDetails.SecretKey,
 		Stats: Stats{
-			NodeID:              status.Result.NodeInfo.ID,
+			NodeID:              cfg.StatsDetails.Node,
 			Version:             version,
 			Network:             status.Result.NodeInfo.Network,
 			OS:                  fmt.Sprintf("%s-%s", runtime.GOOS, runtime.GOARCH),
