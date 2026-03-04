@@ -31,34 +31,35 @@ bor --datadir $DATA_DIR \
 To set up your own dashboard follow these [instructions](./docs/bor-setup.md).
 
 - ## Heimdall:-
-Telemetry data for Heimdall nodes on Mainnet and Mumbai-testnet can be found here [https://heimdall-mainnet.vitwit.com](https://heimdall-mainnet.vitwit.com) and [https://heimdall-mumbai.vitwit.com](https://heimdall-mumbai.vitwit.com)
+Telemetry data for Heimdall nodes on Mainnet and Amoy-testnet can be found here [mainnet.conspulse.com/](mainnet.conspulse.com/) and [https://testnet.conspulse.com/](https://testnet.conspulse.com/)
 
 To export your nodes telemetry data to these dashboards do the following:-
 
 ```
 git clone https://github.com/vitwit/matic-telemetry.git
 cd matic-telemetry
+git checkout v0.1.4
 mkdir -p ~/.telemetry/config
 cp example.config.toml ~/.telemetry/config/config.toml
 ```
 Replace default value of `node` with your <node-name> in `~/.telemetry/config/config.toml`.
 
-Use the following secret_key and IP to connect to **Mainnet** dashboard
+Use the following secret_key and url to connect to **Mainnet** dashboard
 
 ```
 [stats_details]
-secret_key = "heimdall_mainnet"  
-node = "<node-name>" 
-net_stats_ip = "heimdall-mainnet.vitwit.com:3000"
+secret_key = "mainnet-conspulse"
+node = "<node-name>"
+stats_service_url = "https://api.mainnet.conspulse.com"
 ```
 
-Use the following secret_key and IP to connect to **Testnet** dashboard
+Use the following secret_key and url to connect to **Testnet** dashboard
 
 ```
 [stats_details]
-secret_key = "heimdall_testnet"  
-node = "<node-name>" 
-net_stats_ip = "heimdall-mumbai.vitwit.com:3000"
+secret_key = "testnet-conspulse"
+node = "<node-name>"
+stats_service_url = "https://api.testnet.conspulse.com"
 ```
 Build the binary :-
 ```
@@ -77,7 +78,7 @@ Restart=always
 RestartSec=3
 LimitNOFILE=4096
 [Install]
-WantedBy=multi-user.target" | sudo tee "/lib/systemd/system/telemetry.service"
+WantedBy=multi-user.target" | sudo tee "/etc/systemd/system/telemetry.service"
 ```
 Start the telemetry service
 
@@ -91,32 +92,54 @@ View the logs using
 `journalctl -u telemetry -f`
 
 
-# Upgrading for Heimdall v2 Version API Change
+# Migrating from Heimdall eth-netstats to conspulse
 
-If you are running Heimdall v2 (where the version API endpoint has changed), follow these steps to upgrade your telemetry exporter:
+If you were already running `matic-telemetry` and exporting heimdall telemetry data to eth-netstats dashboard then follow these instructions to start exporting your telemetry metrics to conspulse dashboard:
 
-1. **Fetch the latest code:**
-   ```sh
-   git fetch origin
-   git checkout heimdall-v2
-   git pull origin heimdall-v2
-   ```
-2. **Update Go dependencies:**
-   ```sh
-   go mod tidy
-   ```
+1. **Stop the telemetry service:**
+```sh
+sudo systemctl start telemetry.service
+```
+2. **Delete the previous telemetry config file:**
+```sh
+rm ~/.telemetry/config/config.toml
+```
 3. **Build the new telemetry binary:**
-   ```sh
-   go build -o telemetry
-   ```
+```sh
+git clone https://github.com/vitwit/matic-telemetry.git
+cd matic-telemetry
+git checkout v0.1.4
+mkdir -p ~/.telemetry/config
+cp example.config.toml ~/.telemetry/config/config.toml
+go build -o telemetry
+```
 4. **Replace the old binary in your $GOBIN:**
-   ```sh
-   mv telemetry $GOBIN
-   ```
-5. **Restart the telemetry systemd service:**
-   ```sh
-   sudo systemctl restart telemetry.service
-   ```
+```sh
+mv telemetry $GOBIN
+```
+5. **Edit telemetry config file to connect to conspulse:**
+    
+Use the following secret_key and url to connect to **Mainnet** dashboard
+```
+[stats_details]
+secret_key = "mainnet-conspulse"
+node = "<node-name>"
+stats_service_url = "https://api.mainnet.conspulse.com"
+```
 
-After these steps, your telemetry exporter will be compatible with the new Heimdall v2 version API.
+Use the following secret_key and url to connect to **Testnet** dashboard
+
+```
+[stats_details]
+secret_key = "testnet-conspulse"
+node = "<node-name>"
+stats_service_url = "https://api.testnet.conspulse.com"
+```
+    
+6. **Restart the telemetry systemd service:**
+```sh
+sudo systemctl restart telemetry.service
+```
+
+After these steps, your telemetry exporter will be compatible with the new conspulse dashboard.
 

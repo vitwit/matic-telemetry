@@ -5,4 +5,4 @@ heimdall_lcd_endpoint = "http://localhost:1317"
 [stats_details]
 secret_key = "secret_key"
 node = "identifier"
-net_stats_ip = "localhost:3000"
+stats_service_url = "localhost:3000"
