@@ -98,7 +98,7 @@ If you were already running `matic-telemetry` and exporting heimdall telemetry d
 
 1. **Stop the telemetry service:**
 ```sh
-sudo systemctl start telemetry.service
+sudo systemctl stop telemetry.service
 ```
 2. **Delete the previous telemetry config file:**
 ```sh
